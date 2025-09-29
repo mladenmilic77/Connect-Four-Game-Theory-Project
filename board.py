@@ -4,14 +4,12 @@ COLS = 7
 class Board:
     """
     Connect Four board and rules.
-
     Attributes:
         rows (int): Number of rows in the board (default 6).
         cols (int): Number of columns in the board (default 7).
         grid (list[list[int]]): 2D list representing the board.
             0 = empty cell, 1 = player 1, 2 = player 2.
         moves (int): Total number of moves played so far.
-
     Returns convention:
         winner() -> int:
             0 : no winner
@@ -21,7 +19,6 @@ class Board:
     def __init__(self, rows = ROWS, cols = COLS):
         """
         Initialize an empty board of size rows x cols.
-
         Args:
         rows (int): Number of rows (default 6).
         cols (int): Number of columns (default 7).
@@ -34,7 +31,6 @@ class Board:
     def reset(self):
         """
         Clear the board and reset the move counter.
-
         After calling this method, all cells are set to 0
         and moves is reset to 0.
         """
@@ -44,7 +40,6 @@ class Board:
     def valid_moves(self) -> list[bool]:
         """
         Return a boolean mask per column indicating if a move is legal.
-
         Returns:
         list[bool]: True for each column where the top cell is empty,
         False where the column is full.
@@ -54,15 +49,12 @@ class Board:
     def drop(self, col: int, player: int) -> bool:
         """
         Drop a token for `player` (must be 1 or 2) into column `col`.
-
         Args:
             col (int): Index of the column (0-based).
             player (int): Player number (1 or 2).
-
         Raises:
             ValueError: if player is not 1 or 2, or if the column is full.
             IndexError: if `col` is out of range [0, cols-1].
-
         Returns:
             True when the piece is successfully placed.
         """
@@ -88,7 +80,6 @@ class Board:
     def winner(self) -> int:
         """
         Check the board for any 4-in-a-row (vertical, horizontal, or diagonal).
-
         Returns:
             0 if no winner,
             1 if player 1 has four in a row,
