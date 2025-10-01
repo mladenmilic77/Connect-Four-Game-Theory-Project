@@ -9,7 +9,7 @@ class HumanAgent:
         Args:
             name: Optional display name (default: "Paul Human").
         """
-        self.name = "Paul Human" if name is None else name
+        self.name = "Paul Human" if not name else name
 
     def select_move(self, board: Board, player: int) -> int:
         """

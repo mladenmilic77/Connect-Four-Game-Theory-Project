@@ -14,7 +14,6 @@ class MatchRunner:
     def __init__(self, agent1, agent2, board: Board | None = None, echo: bool = True):
         """
         Initialize a match runner with two agents and a game controller.
-
         Args:
             agent1: Agent instance for Player 1.
             agent2: Agent instance for Player 2.
@@ -30,30 +29,69 @@ class MatchRunner:
     def run(self) -> int:
         """
         Play the game until it ends.
-
         Returns:
             int:
                 1 – Player 1 wins
                 2 – Player 2 wins
                 0 – Draw
-
         Raises:
             Exception: If an agent produces an invalid move (caught and reported if echo=True).
         """
         while True:
             player_id = self.game_controller.current_player()
             agent = self.agent1 if player_id == 1 else self.agent2
+
             try:
                 col = agent.select_move(self.game_controller.board, player_id)
                 status = self.game_controller.play(col)
                 self.history.append((player_id, col))
+
                 if self.echo:
+                    self.print_board()
                     name = getattr(agent, "name", f"Agent{player_id}")
-                    print(f"{name} (P{player_id}) -> col {col} :: {status}")
+                    if status.startswith("Winner"):
+                        winner_id = self.game_controller.winner_cache
+                        winner_agent = self.agent1 if winner_id == 1 else self.agent2
+                        winner_name = getattr(winner_agent, "name", f"Agent{winner_id}")
+                        status_text = f"Winner: {winner_name} (P{winner_id})"
+                    elif status == "Draw":
+                        status_text = "Draw"
+                    else:
+                        next_id = self.game_controller.current_player()
+                        next_agent = self.agent1 if next_id == 1 else self.agent2
+                        next_name = getattr(next_agent, "name", f"Agent{next_id}")
+                        status_text = f"Next: {next_name} (P{next_id})"
+
+                    print(f"{name} (P{player_id}) -> col {col} | {status_text}")
+
                 if status.startswith("Winner"):
                     return self.game_controller.winner_cache
                 if status == "Draw":
                     return 0
+
             except Exception as e:
                 if self.echo:
                     print("Error:", e)
+
+    def print_board(self):
+        """Print the current board state in a readable CLI format."""
+        grid = self.game_controller.board.grid
+        rows, cols = self.game_controller.board.rows, self.game_controller.board.cols
+
+        # Print from top to the bottom
+        print(" ".join(str(c) for c in range(cols)))
+        print("-" * (2 * cols - 1))
+        for r in range(rows):
+            line = []
+            for c in range(cols):
+                cell = grid[r][c]
+                if cell == 0:
+                    line.append(".")
+                elif cell == 1:
+                    line.append("X")
+                else:
+                    line.append("O")
+            print(" ".join(line))
+        print("-" * (2 * cols - 1))
+        print(" ".join(str(c) for c in range(cols)))
+        print()
