@@ -1,0 +1,59 @@
+from board import Board
+from game_controller import GameController
+
+class MatchRunner:
+    """
+    Runs a full Connect Four game between two agents.
+    Attributes:
+        agent1: Agent assigned to Player 1.
+        agent2: Agent assigned to Player 2.
+        game_controller (GameController): Manages the board and turn order.
+        echo (bool): If True, prints moves and status messages.
+        history (list[tuple[int, int]]): Sequence of (player_id, column) moves.
+    """
+    def __init__(self, agent1, agent2, board: Board | None = None, echo: bool = True):
+        """
+        Initialize a match runner with two agents and a game controller.
+
+        Args:
+            agent1: Agent instance for Player 1.
+            agent2: Agent instance for Player 2.
+            board (Board | None): Optional starting board (default: new empty board).
+            echo (bool): Whether to print moves/status during the game.
+        """
+        self.agent1 = agent1
+        self.agent2 = agent2
+        self.game_controller = GameController(board)
+        self.echo = echo
+        self.history = []
+
+    def run(self) -> int:
+        """
+        Play the game until it ends.
+
+        Returns:
+            int:
+                1 – Player 1 wins
+                2 – Player 2 wins
+                0 – Draw
+
+        Raises:
+            Exception: If an agent produces an invalid move (caught and reported if echo=True).
+        """
+        while True:
+            player_id = self.game_controller.current_player()
+            agent = self.agent1 if player_id == 1 else self.agent2
+            try:
+                col = agent.select_move(self.game_controller.board, player_id)
+                status = self.game_controller.play(col)
+                self.history.append((player_id, col))
+                if self.echo:
+                    name = getattr(agent, "name", f"Agent{player_id}")
+                    print(f"{name} (P{player_id}) -> col {col} :: {status}")
+                if status.startswith("Winner"):
+                    return self.game_controller.winner_cache
+                if status == "Draw":
+                    return 0
+            except Exception as e:
+                if self.echo:
+                    print("Error:", e)
