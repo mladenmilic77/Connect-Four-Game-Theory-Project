@@ -12,18 +12,18 @@ def main():
         choice = input("Enter choice: ").strip()
 
         if choice == "1":
-            name1 = input("Enter name for Human Player 1 | default: Paul Human: ")
-            name2 = input("Enter name for Human Player 2 | default: Paul Human: ")
+            name1 = input("Enter name for Human Player 1 | default: Paul Human: ").strip()
+            name2 = input("Enter name for Human Player 2 | default: Paul Human: ").strip()
             runner = MatchRunner(HumanAgent(name1), HumanAgent(name2))
             break
         elif choice == "2":
-            name1 = input("Enter name for Human Player 1 | default: Paul Human: ")
-            name2 = input("Enter name for Random Player 2 | default: Marlon Random: ")
+            name1 = input("Enter name for Human Player 1 | default: Paul Human: ").strip()
+            name2 = input("Enter name for Random Player 2 | default: Marlon Random: ").strip()
             runner = MatchRunner(HumanAgent(name1), RandomAgent(name2))
             break
         elif choice == "3":
-            name1 = input("Enter name for Random Player 1 | default: Marlon Random: ")
-            name2 = input("Enter name for Random Player 2 | default: Marlon Random: ")
+            name1 = input("Enter name for Random Player 1 | default: Marlon Random: ").strip()
+            name2 = input("Enter name for Random Player 2 | default: Marlon Random: ").strip()
             runner = MatchRunner(RandomAgent(name1), RandomAgent(name2))
             break
         else:

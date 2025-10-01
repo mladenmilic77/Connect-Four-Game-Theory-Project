@@ -24,7 +24,11 @@ class HumanAgent:
         print(f"{self.name} (P{player}) — valid columns: {legal_moves}")
         while True:
             try:
-                col = int(input("Choose column: "))
+                col = int(input("Choose column: ").strip())
+                if col not in legal_moves:
+                    raise IndexError
                 return col
-            except Exception:
-                print("Invalid input, try again.")
+            except ValueError:
+                print("Please enter a number.")
+            except IndexError:
+                print("That column is not available, try again.")

@@ -11,7 +11,6 @@ class RandomAgent:
         Args:
             name: Optional name (default: "Marlon Random").
             seed: Random seed for reproducibility (default: None).
-            player: Optional player assignment (1 or 2), not used here.
         """
         self.name = "Marlon Random" if not name else name
         self.rng = random.Random() if seed is None else random.Random(seed)

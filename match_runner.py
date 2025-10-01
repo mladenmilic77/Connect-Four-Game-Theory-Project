@@ -77,21 +77,15 @@ class MatchRunner:
         """Print the current board state in a readable CLI format."""
         grid = self.game_controller.board.grid
         rows, cols = self.game_controller.board.rows, self.game_controller.board.cols
+        symbols = {0: "⚪", 1: "🔴", 2: "🟡"}
+        num_emojis = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣"]
 
         # Print from top to the bottom
-        print(" ".join(str(c) for c in range(cols)))
-        print("-" * (2 * cols - 1))
+        print(" ".join(num_emojis[:cols]))
+        print(" ".join(["━"] * 11))
         for r in range(rows):
-            line = []
-            for c in range(cols):
-                cell = grid[r][c]
-                if cell == 0:
-                    line.append(".")
-                elif cell == 1:
-                    line.append("X")
-                else:
-                    line.append("O")
+            line = [symbols[grid[r][c]] for c in range(cols)]
             print(" ".join(line))
-        print("-" * (2 * cols - 1))
-        print(" ".join(str(c) for c in range(cols)))
+        print(" ".join(["━"] * 11))
+        print(" ".join(num_emojis[:cols]))
         print()
