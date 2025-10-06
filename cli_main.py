@@ -1,6 +1,6 @@
 from board import Board
-from human_agent import HumanAgent
-from random_agent import RandomAgent
+from agents.human_agent import HumanAgent
+from agents.random_agent import RandomAgent
 from match_runner import MatchRunner
 
 # TODO take constants from constants.py
