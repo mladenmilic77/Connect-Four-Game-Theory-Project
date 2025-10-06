@@ -39,8 +39,11 @@ def main():
         rows = ask_helper("Enter number of rows: ")
         cols = ask_helper("Enter number of cols: ")
 
+        print(f"Enter the number of tokens needed to win (MIN: 3, MAX: {max(rows, cols)}).")
+        chips = ask_helper("Your choice: ", 3, max(rows, cols))
+
         try:
-            board = Board(rows, cols)
+            board = Board(rows, cols, chips)
         except ValueError as e:
             print(f"Board error: {e}")
             print("Let's try again...\n")
