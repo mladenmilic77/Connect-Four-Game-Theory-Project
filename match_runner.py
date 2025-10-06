@@ -86,12 +86,12 @@ class MatchRunner:
         def num_to_two_rows(n: int):
             t = n // 10
             o = n % 10
-            tens = digit_emoji[str(t)] if t > 0 else digit_emoji['0']  # koristi 0️⃣ kao filler
+            tens = digit_emoji[str(t)]
             ones = digit_emoji[str(o)]
             return tens, ones
 
-        tens_row, ones_row = zip(*(num_to_two_rows(c) for c in range(cols)))
-        separator = "🔹" * cols  # diskretna bela linija
+        tens_row, ones_row = zip(*(num_to_two_rows(c) for c in range(cols))) # asteriks transpose matrix
+        separator = "🔹" * cols
 
         # print
         print("".join(tens_row))
