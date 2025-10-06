@@ -78,14 +78,28 @@ class MatchRunner:
         grid = self.game_controller.board.grid
         rows, cols = self.game_controller.board.rows, self.game_controller.board.cols
         symbols = {0: "⚪", 1: "🔴", 2: "🟡"}
-        num_emojis = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣"]
+        digit_emoji = {
+            '0': '0️⃣', '1': '1️⃣', '2': '2️⃣', '3': '3️⃣', '4': '4️⃣',
+            '5': '5️⃣', '6': '6️⃣', '7': '7️⃣', '8': '8️⃣', '9': '9️⃣'
+        }
 
-        # Print from top to the bottom
-        print(" ".join(num_emojis[:cols]))
-        print(" ".join(["━"] * 11))
+        def num_to_two_rows(n: int):
+            t = n // 10
+            o = n % 10
+            tens = digit_emoji[str(t)] if t > 0 else digit_emoji['0']  # koristi 0️⃣ kao filler
+            ones = digit_emoji[str(o)]
+            return tens, ones
+
+        tens_row, ones_row = zip(*(num_to_two_rows(c) for c in range(cols)))
+        separator = "🔹" * cols  # diskretna bela linija
+
+        # print
+        print("".join(tens_row))
+        print("".join(ones_row))
+        print(separator)
         for r in range(rows):
-            line = [symbols[grid[r][c]] for c in range(cols)]
-            print(" ".join(line))
-        print(" ".join(["━"] * 11))
-        print(" ".join(num_emojis[:cols]))
+            print("".join(symbols[grid[r][c]] for c in range(cols)))
+        print(separator)
+        print("".join(tens_row))
+        print("".join(ones_row))
         print()
