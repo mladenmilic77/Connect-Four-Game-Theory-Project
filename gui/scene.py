@@ -46,7 +46,6 @@ class Scene(ABC):
         """
         raise NotImplementedError()
 
-    @abstractmethod
     def request_switch(self, next_scene_name:str) -> None:
         """
         Ask the WindowManager to switch to another scene.
