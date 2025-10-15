@@ -77,7 +77,7 @@ class MatchRunner:
         """Print the current board state in a readable CLI format."""
         grid = self.game_controller.board.grid
         rows, cols = self.game_controller.board.rows, self.game_controller.board.cols
-        symbols = {0: "⚪", 1: "🔴", 2: "🟡"}
+        symbols = {0: "⚪", 1: "🔴", 2: "🔵"}
         digit_emoji = {
             '0': '0️⃣', '1': '1️⃣', '2': '2️⃣', '3': '3️⃣', '4': '4️⃣',
             '5': '5️⃣', '6': '6️⃣', '7': '7️⃣', '8': '8️⃣', '9': '9️⃣'
@@ -94,12 +94,16 @@ class MatchRunner:
         separator = "🔹" * cols
 
         # print
-        print("".join(tens_row))
-        print("".join(ones_row))
+        def print_header_footer():
+            if rows > 10:
+                print("".join(tens_row))
+            print("".join(ones_row))
+
+        # Board
+        print_header_footer()
         print(separator)
         for r in range(rows):
             print("".join(symbols[grid[r][c]] for c in range(cols)))
         print(separator)
-        print("".join(tens_row))
-        print("".join(ones_row))
+        print_header_footer()
         print()
