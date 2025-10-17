@@ -422,4 +422,168 @@ class TextInput(UIElement):
             cy2 = self.rect.y + self.rect.h - self.padding // 2
             pygame.draw.line(surface, self.caret_color, (cx, cy1), (cx, cy2), width = 1)
 
-#class Dropdown(UIElement):
+class Dropdown(UIElement):
+    """
+    Dropdown (select) component for choosing one option from a predefined list.
+    Supports:
+        - Click to open and close the list
+        - Hover highlight over options
+        - Click on an option to select it
+        - Optional callback on selection change
+    """
+    def __init__(self, x: int, y: int, width: int, height: int, options: list[str], selected_index: int = 0, *,
+                    font: pygame.font.Font | None = None, color_bg: tuple[int, int, int] = (40, 40, 55),
+                    color_bg_open: tuple[int, int, int] = (50, 50, 70), color_hover: tuple[int, int, int] = (70, 70, 100),
+                    color_border: tuple[int, int, int] = (90, 90, 120), color_text: tuple[int, int, int] = (235, 235, 235),
+                    border_px: int = 2, on_change: Callable | None = None):
+        """
+        Initialize a dropdown selector UI element.
+        Args:
+            x (int): X coordinate of the top-left corner.
+            y (int): Y coordinate of the top-left corner.
+            width (int): Width of the dropdown box in pixels.
+            height (int): Height of the dropdown box in pixels.
+            options (list[str]): List of options to choose from.
+            selected_index (int): Index of the initially selected option.
+            font (pygame.font.Font | None): Optional pygame Font object. Default system font if None.
+            color_bg (tuple[int, int, int]): RGB Background color when closed.
+            color_bg_open (tuple[int, int, int]): RGB Background color when opened.
+            color_hover (tuple[int, int, int]): RGB Background color for hovered option.
+            color_border (tuple[int, int, int]): RGB Border color.
+            color_text (tuple[int, int, int]): RGB Text color for displayed text and options.
+            border_px (int): Border thickness in pixels.
+            on_change (Callable | None): Optional callback triggered when selection changes.
+        """
+        super().__init__(x, y, width, height)
+        self.font = font or pygame.font.SysFont(None, 26)
+        self.options = options
+        self.selected_index = max(0, min(selected_index, len(options) - 1))
+        self.color_bg = color_bg
+        self.color_bg_open = color_bg_open
+        self.color_hover = color_hover
+        self.color_border = color_border
+        self.color_text = color_text
+        self.border_px = border_px
+        self.on_change = on_change
+
+        #internal state
+        self.open = False
+        self.hover_index: int | None = None
+
+    def _header_rect(self) -> pygame.Rect:
+        """
+        Return the rectangle area of the dropdown's header (the visible closed part).
+        Returns:
+            pygame.Rect: The rectangle area of the dropdown's header.
+        """
+        return self.rect
+
+    def _list_rect(self) -> pygame.Rect:
+        """
+        Return the rectangle area covering the full list of visible options.
+        Returns:
+            pygame.Rect: The rectangle area covering the full list of options.
+        """
+        return pygame.Rect(self.rect.x, self.rect.y + self.rect.h, self.rect.w, self.rect.h * len(self.options))
+
+    def _option_at(self, pos: tuple[int, int]) -> int | None:
+        """
+        Return the index of the option located at a given mouse position.
+        Args:
+            pos (tuple[int, int]): Mouse position coordinate.
+        Returns:
+            int | None: Index of the option under the mouse, or None if none.
+        """
+        x, y = pos
+        if x < self.rect.x or x > self.rect.x + self.rect.width:
+            return None
+        if y < self.rect.y + self.rect.h or y > self.rect.y + self.rect.h * (len(self.options) + 1):
+            return None
+
+        rel_y = y - (self.rect.y + self.rect.h)
+        idx = int(rel_y // self.rect.h)
+        return idx if 0 <= idx < len(self.options) else None
+
+
+    def handle_event(self, event: pygame.event.Event) -> None:
+        """
+        Handle mouse events for dropdown behavior.
+
+        Handles:
+            - Left-click on header → toggles open/close state.
+            - Mouse hover → highlights the hovered option (when open).
+            - Left-click on an option → selects it and triggers on_change callback.
+            - Click outside → closes dropdown if open.
+        Args:
+            event (pygame.event.Event): pygame.Event instance representing user input.
+        """
+        if not (self.visible and self.enabled):
+            return
+
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self._header_rect().collidepoint(event.pos):
+                self.open = not self.open
+                if not self.open:
+                    self.hover_index = None
+            elif self.open and self._list_rect().collidepoint(event.pos):
+                self.hover_index = self._option_at(event.pos)
+            else:
+                self.open = False
+                self.hover_index = None
+
+        elif event.type == pygame.MOUSEMOTION:
+            if self.open:
+                self.hover_index = self._option_at(event.pos)
+
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            if self.open and self._list_rect().collidepoint(event.pos):
+                idx = self._option_at(event.pos)
+                if idx is not None and idx != self.selected_index:
+                    self.selected_index = idx
+                    if callable(self.on_change):
+                        self.on_change(self.selected_index)
+                self.open = False
+                self.hover_index = None
+            else:
+                if not self._header_rect().collidepoint(event.pos):
+                    self.open = False
+                    self.hover_index = None
+
+    def draw(self, surface: pygame.Surface) -> None:
+        """
+        Render the dropdown box and its contents onto the given surface.
+
+        When closed:
+            - Displays the selected option and a ▼ arrow.
+        When opened:
+            - Displays all available options in a vertical list with hover highlight.
+        Args:
+            surface (pygame.Surface): Pygame surface to draw the dropdown onto.
+        """
+        if not self.visible:
+            return
+
+        bg_color = self.color_bg_open if self.open else self.color_bg
+        pygame.draw.rect(surface, bg_color, self.rect, border_radius = 6)
+        pygame.draw.rect(surface, self.color_border, self.rect, width = self.border_px, border_radius = 6)
+
+        text = self.options[self.selected_index] if self.options else "<empty>"
+        text_surface = self.font.render(text, True, self.color_text)
+        text_rect = text_surface.get_rect(midleft = (self.rect.x + 10, self.rect.centery))
+        surface.blit(text_surface, text_rect)
+
+        # ▼ indicator
+        tri_x = self.rect.right - 16
+        tri_y = self.rect.centery
+        pygame.draw.polygon(surface, self.color_text, [(tri_x, tri_y - 4), (tri_x + 8, tri_y - 4), (tri_x + 4, tri_y + 4)])
+
+        if self.open:
+            for i, option in enumerate(self.options):
+                opt_rect = pygame.Rect(self.rect.x, self.rect.y + self.rect.h * (i + 1), self.rect.w, self.rect.h)
+                hover = (i == self.hover_index)
+                color = self.color_hover if hover else self.color_bg_open
+                pygame.draw.rect(surface, color, opt_rect)
+                pygame.draw.rect(surface, self.color_border, opt_rect, width = 1)
+                opt_surf = self.font.render(option, True, self.color_text)
+                opt_rect_text = opt_surf.get_rect(midleft = (opt_rect.x + 10, opt_rect.centery))
+                surface.blit(opt_surf, opt_rect_text)
