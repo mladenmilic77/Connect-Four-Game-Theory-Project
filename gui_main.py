@@ -12,7 +12,7 @@ def main() -> int:
 
 
     def on_start_and_switch():
-        menu._on_start()
+        menu.start_game()
         if menu.selected_config:
             game.set_config(menu.selected_config)
 

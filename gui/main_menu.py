@@ -9,9 +9,14 @@ DEFAULT_CONNECT = 4
 AGENT_TYPES = ["Human", "Random"]
 
 class MainMenu(Scene):
-    """"""
+    """Main menu scene for configuring a Connect-N match and starting/quit actions."""
     def __init__(self):
-        """"""
+        """
+        Initialize the main menu scene and create all UI elements.
+
+        Sets up labels, inputs, dropdowns, buttons, and internal state used for layout
+        and selected configuration.
+        """
         super().__init__("Main Menu")
         self._size: Tuple[int, int] = (0, 0)
         self._layout_dirty = True
@@ -53,11 +58,16 @@ class MainMenu(Scene):
         self.title.font = pygame.font.SysFont(None, 40)
 
     def _apply_layout(self, width: int, height: int) -> None:
-        """"""
+        """
+        Compute responsive positions/sizes for all UI elements.
+        Args:
+            width (int): Current window width in pixels.
+            height (int): Current window height in pixels.
+        """
         margin_x = max(40, int(width * 0.08)) # Left margin
         top_y = max(40, int(height * 0.06)) # Top margin
-        line_h = max(50, int(height * 0.07)) # Height of the rows for UI elements
-        gap_y = max(12, int(height * 0.02))
+        line_h = max(50, int(height * 0.10)) # Height of the rows for UI elements
+        gap_y = max(12, int(height * 0.05))
         gap_x = max(12, int(width * 0.012))
 
         usable_w = width - 2 * margin_x
@@ -66,7 +76,7 @@ class MainMenu(Scene):
         self.title.rect.topleft = (margin_x, top_y)
         y = top_y + line_h
 
-        # ROW one: rows, cols, connect (3 Blocks)
+        # FIRST ROW: rows, cols, connect (3 Blocks)
         col_w = (usable_w - 2 * gap_x) // 3 # column width for label and it's input
         label_w_buf = 90 # width of the label
 
@@ -84,25 +94,28 @@ class MainMenu(Scene):
         self.in_conn.rect.update(x3 + label_w_buf, y + (line_h - self.in_conn.rect.h) // 2, max(80, col_w - label_w_buf),
                                     self.in_conn.rect.h)
 
+        # SECOND ROW: label, player name input, dropdown
         y += line_h + gap_y
 
         left_w = int(usable_w * 0.66)
         right_w = usable_w - left_w - gap_x
 
         self.lbl_p1.rect.topleft = (margin_x, y)
-        y += int(self.lbl_p1.rect.h * 0.8)
+        y += int(self.lbl_p1.rect.h * 0.8) + gap_y // 2
 
         self.in_p1.rect.update(margin_x, y, max(240, left_w), self.in_p1.rect.h)
         self.dd_p1.rect.update(margin_x + left_w + gap_x, y, max(140, right_w), self.dd_p1.rect.h)
 
+        # THIRD ROW: label, player name input, dropdown
         y += 44 + gap_y + 8
 
         self.lbl_p2.rect.topleft = (margin_x, y)
-        y += int(self.lbl_p2.rect.h * 0.8)
+        y += int(self.lbl_p2.rect.h * 0.8) + gap_y // 2
 
         self.in_p2.rect.update(margin_x, y, max(240, left_w), self.in_p2.rect.h)
         self.dd_p2.rect.update(margin_x + left_w + gap_x, y, max(140, right_w), self.dd_p2.rect.h)
 
+        # FOURTH ROW: start button, quit button
         bottom_y = height - max(30, int(height * 0.06)) - 52
 
         self.btn_start.rect.update(center_x - 220, bottom_y, self.btn_start.rect.w, self.btn_start.rect.h)
@@ -110,9 +123,13 @@ class MainMenu(Scene):
 
         self._layout_dirty = False
 
-    def handle_events(self, event: list[pygame.event.Event]) -> None:
-        """"""
-        for e in event:
+    def handle_events(self, events: list[pygame.event.Event]) -> None:
+        """
+        Handle window and UI events (resize, clicks, typing, etc.).
+        Args:
+            events (list[pygame.event.Event]): Events captured from the main loop.
+        """
+        for e in events:
             if e.type == pygame.VIDEORESIZE:
                 self._size = (e.w, e.h)
                 self._layout_dirty = True
@@ -121,10 +138,22 @@ class MainMenu(Scene):
                 el.handle_event(e)
 
     def update(self, dt: float) -> None:
+        """
+        Update UI elements (e.g., caret blink) each frame.
+        Args:
+            dt (float): Time elapsed since last update.
+        """
         for el in self._elements:
             el.update(dt)
 
     def draw(self, surface: pygame.Surface) -> None:
+        """
+        Render the scene and its UI elements to the target surface.
+
+        Recomputes the layout if the window size changed since last frame.
+        Args:
+            surface (pygame.Surface): Surface to draw on.
+        """
         w, h = surface.get_size()
         if (w, h) != self._size:
             self._size = (w, h)
@@ -138,11 +167,21 @@ class MainMenu(Scene):
         for el in self._elements:
             el.draw(surface)
 
+    def start_game(self):
+        """Public method to handle Start Game logic."""
+        self._on_start()
+
     def _on_start(self):
+        """
+        Collect form values, build `selected_config`, and request switch to Game.
+
+        Parses rows/cols/connect and player names/types, stores them in `selected_config`,
+        and calls `request_switch("Game")`.
+        """
         def _to_int(txt: str, fallback: int) -> int:
             try:
                 return max(1, int(txt.strip()))
-            except Exception:
+            except (ValueError, AttributeError):
                 return fallback
 
         rows = _to_int(self.in_rows.text, DEFAULT_ROWS)
@@ -162,13 +201,18 @@ class MainMenu(Scene):
 
         self.request_switch("Game")
 
-    def _on_quit(self):
-
+    @staticmethod
+    def _on_quit():
+        """Post a QUIT event to terminate the application."""
         pygame.event.post(pygame.event.Event(pygame.QUIT))
 
-    # ------------------------- Helpers --------------------------
-
-    def _draw_guides(self, surface: pygame.Surface) -> None:
+    @staticmethod
+    def  _draw_guides(surface: pygame.Surface) -> None:
+        """
+        Draw subtle horizontal guidelines to visually verify the layout.
+        Args:
+            surface (pygame.Surface): Surface to draw on.
+        """
         w, h = surface.get_size()
         guide_color = (30, 30, 40)
 
@@ -181,7 +225,6 @@ class MainMenu(Scene):
         y2 = y1 + line_h + gap_y + 52
         y3 = h - max(30, int(h * 0.06)) - 62
 
-        pygame.draw.line(surface, guide_color, (margin_x, y1), (w - margin_x, y1), 1)
-        pygame.draw.line(surface, guide_color, (margin_x, y2), (w - margin_x, y2), 1)
-        pygame.draw.line(surface, guide_color, (margin_x, y3), (w - margin_x, y3), 1)
-
+        pygame.draw.line(surface, guide_color, (margin_x, y1), (w - margin_x, y1), 6)
+        pygame.draw.line(surface, guide_color, (margin_x, y2), (w - margin_x, y2), 6)
+        pygame.draw.line(surface, guide_color, (margin_x, y3), (w - margin_x, y3), 6)

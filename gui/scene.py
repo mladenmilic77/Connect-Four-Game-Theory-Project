@@ -20,11 +20,11 @@ class Scene(ABC):
         self.requested_scene = None
 
     @abstractmethod
-    def handle_events(self, event: list[pygame.event.Event]) -> None:
+    def handle_events(self, events: list[pygame.event.Event]) -> None:
         """
         Handle events received from the scene.
         Args:
-            event (list[pygame.event.Event]): List of events received from the scene.
+            events (list[pygame.event.Event]): List of events received from the scene.
         """
         raise NotImplementedError()
 
