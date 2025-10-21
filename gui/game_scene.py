@@ -91,6 +91,7 @@ class GameScene(Scene):
         self._update_status_text()
 
         self._ai_cooldown = self._ai_delay
+        self._layout_dirty = True
 
     def _apply_layout(self, w: int, h: int) -> None:
         """
@@ -99,43 +100,41 @@ class GameScene(Scene):
             w (int): Current window width.
             h (int): Current window height
         """
-        margin_x = max(24, int(w * 0.03))
+        margin_x_ui = max(24, int(w * 0.03))
         top = max(16, int(h * 0.03))
         line_h = max(36, int(h * 0.055))
         gap_y = max(6, int(h * 0.012))
 
-        # Title and info
         y = top
-        self.lbl_title.rect.topleft = (margin_x, y)
-        y += line_h
-
-        self.lbl_p1.rect.topleft = (margin_x, y)
-        y += int(line_h * 0.9)
-
-        self.lbl_p2.rect.topleft = (margin_x, y)
-        y += int(line_h * 0.9)
-
-        self.lbl_status.rect.topleft = (margin_x, y)
-        y += int(line_h * 1.0)
+        self.lbl_title.rect.topleft = (margin_x_ui, y); y += line_h
+        self.lbl_p1.rect.topleft = (margin_x_ui, y);    y += int(line_h * 0.9)
+        self.lbl_p2.rect.topleft = (margin_x_ui, y);    y += int(line_h * 0.9)
+        self.lbl_status.rect.topleft = (margin_x_ui, y); y += int(line_h * 1.0)
 
         btn_y = top
-        self.btn_back.rect.update(w - margin_x - 160, btn_y, self.btn_back.rect.w, self.btn_back.rect.h)
-        self.btn_restart.rect.update(w - margin_x - 160 - 12 - 140, btn_y, self.btn_restart.rect.w, self.btn_restart.rect.h)
+        self.btn_back.rect.update(w - margin_x_ui - 160, btn_y, self.btn_back.rect.w, self.btn_back.rect.h)
+        self.btn_restart.rect.update(w - margin_x_ui - 160 - 12 - 140, btn_y, self.btn_restart.rect.w, self.btn_restart.rect.h)
 
-        area_y = y + gap_y
-        area_h = max(200, h - area_y - max(16, int(h * 0.03)))
-        area_w = w
+        status_bottom = self.lbl_status.rect.bottom
+        hover_zone_px = max(140, int(0.18 * h))
+
+        board_y = status_bottom + gap_y + hover_zone_px
+        area_w, area_h = w, h
 
         if self.renderer is None:
             self.renderer = BoardRenderer(self.board.rows, self.board.cols, area_w, area_h,
-                                            margin_x = margin_x, margin_top = area_y, margin_bottom = max(24, int(h * 0.03)))
+                                            margin_x=0, margin_top=board_y, margin_bottom=0)
         else:
-            self.renderer.set_area(area_w, area_h)
-            self.renderer.margin_x = margin_x
-            self.renderer.margin_top = area_y
-            self.renderer.margin_bottom = max(24, int(h * 0.03))
-            self.renderer.set_area(area_w, area_h)
+            r = self.renderer
+            r.margin_x = 0
+            r.margin_top = board_y
+            r.margin_bottom = 0
+            r.set_area(area_w, area_h)
 
+        r = self.renderer
+        safe_gap = 8
+        r.hover_min_cy = status_bottom + safe_gap + r.radius
+        r.hover_max_cy = int(r.grid_y - r.radius - 2)
         self._layout_dirty = False
 
     def _current_is_human(self) -> bool:

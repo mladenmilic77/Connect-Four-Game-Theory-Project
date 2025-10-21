@@ -77,22 +77,37 @@ class MainMenu(Scene):
         y = top_y + line_h
 
         # FIRST ROW: rows, cols, connect (3 Blocks)
-        col_w = (usable_w - 2 * gap_x) // 3 # column width for label and it's input
-        label_w_buf = 90 # width of the label
+        col_w = (usable_w - 2 * gap_x) // 3
+
+        l_buf1 = self.lbl_rows.rect.w + 12
+        l_buf2 = self.lbl_cols.rect.w + 12
+        l_buf3 = self.lbl_conn.rect.w + 12
 
         self.lbl_rows.rect.topleft = (margin_x, y + (line_h - self.lbl_rows.rect.h) // 2)
-        self.in_rows.rect.update(margin_x + label_w_buf, y + (line_h - self.in_rows.rect.h) // 2, max(80, col_w - label_w_buf),
-                                    self.in_rows.rect.h)
+        self.in_rows.rect.update(
+            margin_x + l_buf1,
+            y + (line_h - self.in_rows.rect.h) // 2,
+            max(80, col_w - l_buf1),
+            self.in_rows.rect.h
+        )
 
         x2 = margin_x + col_w + gap_x
         self.lbl_cols.rect.topleft = (x2, y + (line_h - self.lbl_cols.rect.h) // 2)
-        self.in_cols.rect.update(x2 + label_w_buf, y + (line_h - self.in_cols.rect.h) // 2,max(80, col_w - label_w_buf),
-                                    self.in_cols.rect.h)
+        self.in_cols.rect.update(
+            x2 + l_buf2,
+            y + (line_h - self.in_cols.rect.h) // 2,
+            max(80, col_w - l_buf2),
+            self.in_cols.rect.h
+        )
 
         x3 = margin_x + 2 * (col_w + gap_x)
         self.lbl_conn.rect.topleft = (x3, y + (line_h - self.lbl_conn.rect.h) // 2)
-        self.in_conn.rect.update(x3 + label_w_buf, y + (line_h - self.in_conn.rect.h) // 2, max(80, col_w - label_w_buf),
-                                    self.in_conn.rect.h)
+        self.in_conn.rect.update(
+            x3 + l_buf3,
+            y + (line_h - self.in_conn.rect.h) // 2,
+            max(80, col_w - l_buf3),
+            self.in_conn.rect.h
+        )
 
         # SECOND ROW: label, player name input, dropdown
         y += line_h + gap_y
@@ -161,11 +176,16 @@ class MainMenu(Scene):
         if self._layout_dirty:
             self._apply_layout(w, h)
 
-
         self._draw_guides(surface)
 
         for el in self._elements:
+            if isinstance(el, Dropdown) and el.open:
+                continue
             el.draw(surface)
+
+        for el in self._elements:
+            if isinstance(el, Dropdown) and el.open:
+                el.draw(surface)
 
     def start_game(self):
         """Public method to handle Start Game logic."""

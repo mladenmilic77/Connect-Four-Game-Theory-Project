@@ -34,23 +34,26 @@ class BoardRenderer:
         self.color_p1 = color_p1
         self.color_p2 = color_p2
 
+        self.hover_min_cy = float("-inf")
+        self.hover_max_cy = float("inf")
+
         self._compute_layout()
 
     def _compute_layout(self) -> None:
         """Recalculate layout parameters for cell size, grid dimensions, and token radius."""
-        inner_w = self.area_width - 2 * self.margin_x
-        inner_h = self.area_height - (self.margin_top + self.margin_bottom)
+        inner_w = max(0, self.area_width - 2 * self.margin_x)
+        inner_h = max(0, self.area_height - (self.margin_top + self.margin_bottom))
 
-        cell_width = inner_w / self.cols
-        cell_height = inner_h / self.rows
-        self.cell = int(min(cell_width, cell_height))
+        self.cell_w = (inner_w / self.cols) if self.cols > 0 else 0
+        self.cell_h = (inner_h / self.rows) if self.rows > 0 else 0
 
-        self.grid_w = self.cell * self.cols
-        self.grid_h = self.cell * self.rows
-        self.grid_x = (self.area_width - self.grid_w) // 2
+        self.grid_w = inner_w
+        self.grid_h = inner_h
+        self.grid_x = self.margin_x
         self.grid_y = self.margin_top
 
-        self.radius = int(self.cell * 0.42)
+        base = min(self.cell_w, self.cell_h)
+        self.radius = int(base * 0.48) if base > 0 else 0
 
     def grid_to_px(self, row: int, col: int) -> tuple[int, int]:
         """
@@ -61,8 +64,8 @@ class BoardRenderer:
         Returns:
             tuple[int, int]: Pixel coordinates (x, y) of the cell center.
         """
-        cx = self.grid_x + col * self.cell + self.cell // 2
-        cy = self.grid_y + row * self.cell + self.cell // 2
+        cx = int(self.grid_x + col * self.cell_w + self.cell_w * 0.5)
+        cy = int(self.grid_y + row * self.cell_h + self.cell_h * 0.5)
         return cx, cy
 
     def px_to_col(self, x: int) -> int | None:
@@ -73,9 +76,11 @@ class BoardRenderer:
         Returns:
             int | None: Column index if within board bounds, otherwise None.
         """
-        if x < self.grid_x or x > self.grid_x + self.grid_w:
+        if not self.cell_w:
             return None
-        c = int((x - self.grid_x) // self.cell)
+        if x < self.grid_x or x >= self.grid_x + self.grid_w:
+            return None
+        c = int((x - self.grid_x) // self.cell_w)
         return c if 0 <= c < self.cols else None
 
     def draw_board(self, surface: pygame.Surface) -> None:
@@ -84,12 +89,17 @@ class BoardRenderer:
         Args:
             surface (pygame.Surface): Target surface for rendering.
         """
-        pygame.draw.rect(surface, self.color_board, pygame.Rect(self.grid_x, self.grid_y, self.grid_w, self.grid_h), border_radius = 12)
-
+        rect = pygame.Rect(int(self.grid_x), int(self.grid_y), int(self.grid_w), int(self.grid_h))
+        if rect.w <= 0 or rect.h <= 0:
+            return
+        pygame.draw.rect(surface, self.color_board, rect, border_radius=12)
+        if self.radius <= 0:
+            return
         for r in range(self.rows):
+            gy = self.grid_y + r * self.cell_h + self.cell_h * 0.5
             for c in range(self.cols):
-                cx, cy = self.grid_to_px(r, c)
-                pygame.draw.circle(surface, self.color_hole, (cx, cy), self.radius)
+                gx = self.grid_x + c * self.cell_w + self.cell_w * 0.5
+                pygame.draw.circle(surface, self.color_hole, (int(gx), int(gy)), self.radius)
 
     def draw_tokens(self, surface: pygame.Surface, board: list[list[int]]) -> None:
         """
@@ -98,14 +108,18 @@ class BoardRenderer:
             surface (pygame.Surface): Target surface for rendering.
             board (list[list[int]]): 2D grid representing board state.
         """
+        if self.radius <= 0:
+            return
         for r in range(self.rows):
+            row = board[r]
+            gy = self.grid_y + r * self.cell_h + self.cell_h * 0.5
             for c in range(self.cols):
-                v = board[r][c]
+                v = row[c]
                 if v == 0:
                     continue
-                cx, cy = self.grid_to_px(r, c)
+                gx = self.grid_x + c * self.cell_w + self.cell_w * 0.5
                 color = self.color_p1 if v == 1 else self.color_p2
-                pygame.draw.circle(surface, color, (cx, cy), self.radius)
+                pygame.draw.circle(surface, color, (int(gx), int(gy)), self.radius)
 
     def draw_hover(self, surface: pygame.Surface, col: int | None, player: int = 1) -> None:
         """
@@ -115,12 +129,31 @@ class BoardRenderer:
             col (int | None): Hovered column index.
             player (int): Current player ID (1 or 2).
         """
-        if col is None or not (0 <= col < self.cols):
+        if col is None or not (0 <= col < self.cols) or self.radius <= 0:
             return
+        if self.hover_max_cy <= self.hover_min_cy:
+            return
+
+        cx = int(self.grid_x + col * self.cell_w + self.cell_w * 0.5)
+
+        d = max(self.rows, self.cols)
+        if d <= 7:
+            frac = 0.35
+        elif d <= 15:
+            frac = 0.25
+        else:
+            frac = 0.18
+
+        pad_board = max(4, int(frac * self.cell_h))
+        target = int(self.grid_y - self.radius - pad_board)
+
+        low  = int(self.hover_min_cy)
+        high = int(self.hover_max_cy)
+        cy = max(low, min(target, high))
+
         color = self.color_p1 if player == 1 else self.color_p2
-        cx = self.grid_x + col * self.cell + self.cell // 2
-        cy = self.grid_y - int(self.cell * 0.5)
         pygame.draw.circle(surface, color, (cx, cy), self.radius)
+        pygame.draw.circle(surface, (245, 245, 245), (cx, cy), self.radius, width = 1)
 
     def set_area(self, width: int, height: int) -> None:
         """
@@ -129,6 +162,8 @@ class BoardRenderer:
             width (int): New available width.
             height (int): New available height.
         """
+        if width == self.area_width and height == self.area_height:
+            return
         self.area_width = width
         self.area_height = height
         self._compute_layout()
