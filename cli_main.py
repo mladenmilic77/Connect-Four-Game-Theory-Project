@@ -2,9 +2,39 @@ from board import Board
 from agents.human_agent import HumanAgent
 from agents.random_agent import RandomAgent
 from match_runner import MatchRunner
+from agents.heuristic_agent import OffensiveAgent, DefensiveAgent
 
 # TODO take constants from constants.py
 MIN_RC, MAX_RC = 4, 30
+AGENT_CLASSES = {
+    "Human": HumanAgent,
+    "Random": RandomAgent,
+    "Offensive": OffensiveAgent,
+    "Defensive": DefensiveAgent,
+}
+
+def choose_agent(player_num: int) -> object:
+    """"""
+    print(f"\nSelect Agent type for player {player_num}:")
+    for i, agent_type in enumerate(AGENT_CLASSES.keys(), start = 1):
+        print(f"{i} - {agent_type}")
+
+    while True:
+        choice = input(f"Enter choice for player {player_num}: ").strip()
+        if choice.isdigit() and 1 <= int(choice) <= len(AGENT_CLASSES):
+            agent_type = list(AGENT_CLASSES.keys())[int(choice) - 1]
+            break
+        print("Invalid choice. Try again.")
+
+    default_name = {
+        "Human": "Paul Human",
+        "Random": "Marlon Random",
+        "Offensive": "Rowan Attackinson",
+        "Defensive": "Samuel L. Blockson",
+    }[agent_type]
+    name = input(f"Enter name for {agent_type} Player {player_num} | default: {default_name}: ").strip() or default_name
+
+    return AGENT_CLASSES[agent_type](name)
 
 def ask_helper(prompt: str, min_v = MIN_RC, max_v = MAX_RC) -> int:
     while True:
@@ -21,51 +51,27 @@ def ask_helper(prompt: str, min_v = MIN_RC, max_v = MAX_RC) -> int:
 
 
 def main():
-    runner = None
+    print("=== Connect Four CLI ===")
+    print(f"\nChoose board dimensions (MIN: {MIN_RC}, MAX: {MAX_RC})")
+    rows = ask_helper("Enter number of rows: ")
+    cols = ask_helper("Enter number of cols: ")
 
-    while True:
-        print("=== Connect Four CLI ===")
-        print("Choose mode:")
-        print("1 - Human vs Human")
-        print("2 - Human vs Random")
-        print("3 - Random vs Random")
-        choice = input("Enter choice: ").strip()
+    print(f"Enter the number of tokens needed to win (MIN: 3, MAX: {max(rows, cols)}).")
+    chips = ask_helper("Your choice: ", 3, max(rows, cols))
 
-        if choice not in {"1", "2", "3"}:
-            print("Invalid choice.\n")
-            continue
+    try:
+        board = Board(rows, cols, chips)
+    except ValueError as e:
+        print(f"Board error: {e}")
+        print("Let's try again...\n")
+        return
 
-        print(f"\nChoose board dimensions (MIN: {MIN_RC}, MAX: {MAX_RC})")
-        rows = ask_helper("Enter number of rows: ")
-        cols = ask_helper("Enter number of cols: ")
+    agent1 = choose_agent(1)
+    agent2 = choose_agent(2)
 
-        print(f"Enter the number of tokens needed to win (MIN: 3, MAX: {max(rows, cols)}).")
-        chips = ask_helper("Your choice: ", 3, max(rows, cols))
-
-        try:
-            board = Board(rows, cols, chips)
-        except ValueError as e:
-            print(f"Board error: {e}")
-            print("Let's try again...\n")
-            continue
-
-        if choice == "1":
-            name1 = input("Enter name for Human Player 1 | default: Paul Human: ").strip()
-            name2 = input("Enter name for Human Player 2 | default: Paul Human: ").strip()
-            runner = MatchRunner(HumanAgent(name1), HumanAgent(name2), board)
-        elif choice == "2":
-            name1 = input("Enter name for Human Player 1 | default: Paul Human: ").strip()
-            name2 = input("Enter name for Random Player 2 | default: Marlon Random: ").strip()
-            runner = MatchRunner(HumanAgent(name1), RandomAgent(name2), board)
-        else:
-            name1 = input("Enter name for Random Player 1 | default: Marlon Random: ").strip()
-            name2 = input("Enter name for Random Player 2 | default: Marlon Random: ").strip()
-            runner = MatchRunner(RandomAgent(name1), RandomAgent(name2), board)
-
-        break
-
-
+    runner = MatchRunner(agent1, agent2, board)
     result = runner.run()
+
     print("=== Game Over ===")
     if result == 0:
         print("Draw!")
