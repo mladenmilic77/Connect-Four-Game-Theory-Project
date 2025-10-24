@@ -223,7 +223,7 @@ class _HeuristicBase:
         self.w_my_fork = w_my_fork
         self.w_opp_fork = w_opp_fork
 
-    def _score_position(self, board: Board, last_col, player) -> int:
+    def score_position(self, board: Board, last_col, player) -> int:
         """
         Evaluate the board position numerically for the given player.
 
@@ -293,7 +293,7 @@ class _HeuristicBase:
             best_block, best_score = None, -float('inf')
             for c in opp_wins:
                 next_board = _clone_and_drop(board, c, player)
-                score = self._score_position(next_board, c, player)
+                score = self.score_position(next_board, c, player)
                 if score > best_score:
                     best_score, best_block = score, c
             return best_block
@@ -311,7 +311,7 @@ class _HeuristicBase:
                 best_col, best_score = None, -float('inf')
                 for c in candidates:
                     next_board = _clone_and_drop(board, c, player)
-                    score = self._score_position(next_board, c, player)
+                    score = self.score_position(next_board, c, player)
                     if score > best_score:
                         best_score, best_col = score, c
                 return best_col
@@ -319,7 +319,7 @@ class _HeuristicBase:
         best_col, best_score = None, -float('inf')
         for c in legal_cols:
             next_board = _clone_and_drop(board, c, player)
-            score = self._score_position(next_board, c, player)
+            score = self.score_position(next_board, c, player)
             if score > best_score:
                 best_score, best_col = score, c
         return best_col
@@ -327,7 +327,7 @@ class _HeuristicBase:
 class OffensiveAgent(_HeuristicBase):
     """Aggressive heuristic agent prioritizing offensive play."""
     def __init__(self, name: str | None):
-        super().__init__(name or "Rowan Attackinson",
+        super().__init__(name or "Rowan Attackinson", # noqa
                             w_win = 1_000_000,
                             w_block = 200_000,
                             w_pot = 200,
@@ -338,7 +338,7 @@ class OffensiveAgent(_HeuristicBase):
 class DefensiveAgent(_HeuristicBase):
     """Defensive heuristic agent prioritizing prevention and blocking."""
     def __init__(self, name: str | None):
-        super().__init__(name or "Samuel L. Blockson",
+        super().__init__(name or "Samuel L. Blockson", # noqa
                             w_win = 1_000_000,
                             w_block = 200_000,
                             w_pot = 200,

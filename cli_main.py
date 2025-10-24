@@ -3,6 +3,7 @@ from agents.human_agent import HumanAgent
 from agents.random_agent import RandomAgent
 from match_runner import MatchRunner
 from agents.heuristic_agent import OffensiveAgent, DefensiveAgent
+from agents.minimax_agent import MinimaxAgent
 
 # TODO take constants from constants.py
 MIN_RC, MAX_RC = 4, 30
@@ -11,6 +12,7 @@ AGENT_CLASSES = {
     "Random": RandomAgent,
     "Offensive": OffensiveAgent,
     "Defensive": DefensiveAgent,
+    "Minimax": MinimaxAgent,
 }
 
 def choose_agent(player_num: int) -> object:
@@ -31,6 +33,7 @@ def choose_agent(player_num: int) -> object:
         "Random": "Marlon Random",
         "Offensive": "Rowan Attackinson",
         "Defensive": "Samuel L. Blockson",
+        "Minimax": "Minnie Maxus", # noqa
     }[agent_type]
     name = input(f"Enter name for {agent_type} Player {player_num} | default: {default_name}: ").strip() or default_name
 
