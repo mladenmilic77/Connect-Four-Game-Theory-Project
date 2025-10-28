@@ -1,6 +1,6 @@
-# 🎮 Connect4 Game Theory Project
+# 🎮 Connect-N Game Theory Project
 
-A Python implementation of the **Connect N** game featuring multiple intelligent agents for AI and game theory experimentation.
+A Python implementation of the **Connect-N** game featuring multiple intelligent agents for AI and game theory experimentation.
 
 ---
 
@@ -19,8 +19,8 @@ A Python implementation of the **Connect N** game featuring multiple intelligent
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/<your-username>/<repo-name>.git
-cd <repo-name>
+git clone https://github.com/mladenmilic77/Connect-Four-Game-Theory-Project.git
+cd Connect-Four-Game-Theory-Project
 pip install -r requirements.txt
 ```
 
@@ -80,19 +80,6 @@ python cli_main.py
 │
 ├── requirements.txt
 └── README.md
-```
-
----
-
-## 🧪 Example Match
-
-To pit two agents against each other:
-
-```bash
-python cli_main.py
-# Example configuration:
-# Player 1: MCTSAgent
-# Player 2: RandomAgent
 ```
 
 ---

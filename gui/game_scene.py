@@ -4,11 +4,22 @@ from gui.scene import Scene
 from board import Board
 from game_controller import GameController
 from agents.random_agent import RandomAgent
+from agents.minimax_agent import MinimaxAgent
+from agents.heuristic_agent import OffensiveAgent
+from agents.mcts_agent import MCTSAgent
 from gui.board_renderer import BoardRenderer
 from gui.ui_element import Label, Button
 
 class GameScene(Scene):
     """Handles the Connect-N gameplay scene, including rendering, input, and agent control."""
+
+    AGENTS = {
+        "Human": lambda name: None,
+        "Random": lambda name: RandomAgent(name),
+        "Heuristic": lambda name: OffensiveAgent(name),
+        "Minimax": lambda name: MinimaxAgent(name),
+        "Monte Carlo": lambda name: MCTSAgent(name),
+    }
     def __init__(self, name: str = "Game"):
         """
         Initialize the game scene and create all UI elements.
@@ -56,8 +67,6 @@ class GameScene(Scene):
 
         self._init_game()
 
-    # -------------------- Public API --------------------
-
     def set_config(self, config: Dict) -> None:
         """
         Update scene configuration and reinitialize the game.
@@ -67,7 +76,23 @@ class GameScene(Scene):
         self.config.update(config or {})
         self._init_game()
 
-    # -------------------- Internal ----------------------
+    def _make_agent(self, kind: str, name: str):
+        """
+        Build an agent instance by kind string. 'Human' returns None (no AI).
+        Args:
+            kind (str): Agent type key (e.g., 'Human', 'Random', 'Minimax', 'MCTS', ...).
+            name (str): Display name for the agent.
+        Returns:
+            object | None: Agent instance or None for Human.
+        Raises:
+            ValueError: If kind is unknown.
+        """
+        if kind is None:
+            return None
+        factory = self.AGENTS.get(kind)
+        if factory is None:
+            raise ValueError(f"Unknown agent type: {kind!r}")
+        return factory(name)
 
     def _init_game(self) -> None:
         """Initialize or reset the game state, board, controller, and agents."""
@@ -82,8 +107,8 @@ class GameScene(Scene):
         self._hover_col = None
 
         # Agents
-        self.p1_agent = RandomAgent(self.config["p1_name"]) if self.config.get("p1_type") == "Random" else None
-        self.p2_agent = RandomAgent(self.config["p2_name"]) if self.config.get("p2_type") == "Random" else None
+        self.p1_agent = self._make_agent(self.config.get("p1_type", "Human"), self.config.get("p1_name", "Player 1"))
+        self.p2_agent = self._make_agent(self.config.get("p2_type", "Random"), self.config.get("p2_name", "Player 2"))
 
         # Status
         self.lbl_p1.set_text(f"P1: {self.config['p1_name']}  [{self.config['p1_type']}]")
@@ -146,11 +171,11 @@ class GameScene(Scene):
         pid = self.gc.current_player()
         return (pid == 1 and self.p1_agent is None) or (pid == 2 and self.p2_agent is None)
 
-    def _current_agent(self) -> Optional[RandomAgent]:
+    def _current_agent(self) -> Optional[object]:
         """
         Return the active agent instance for the current player.
         Returns:
-            RandomAgent | None: Active agent if current player is AI, otherwise None.
+            object | None: Active agent if current player is AI, otherwise None.
         """
         return self.p1_agent if self.gc.current_player() == 1 else self.p2_agent
 
