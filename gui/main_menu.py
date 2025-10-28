@@ -6,7 +6,7 @@ from typing import Tuple
 DEFAULT_ROWS = 6
 DEFAULT_COLS = 7
 DEFAULT_CONNECT = 4
-AGENT_TYPES = ["Human", "Random"]
+AGENT_TYPES = ["Human", "Random", "Heuristic", "Minimax", "Monte Carlo"]
 
 class MainMenu(Scene):
     """Main menu scene for configuring a Connect-N match and starting/quit actions."""
