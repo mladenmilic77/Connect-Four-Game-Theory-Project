@@ -45,6 +45,15 @@ class _Node:
     """
     Represents a single node (state) in the Monte Carlo search tree.
     Each node stores game statistics (visits, wins) and references to its children.
+    Attributes:
+        parent (_Node | None): Reference to the parent node (None for the root node).
+        move (int | None): Column index (0-based) of the move that led to this node
+            from its parent; None for the root node.
+        to_play (int): ID of the player whose turn it is at this node (1 or 2).
+        children (dict[col, _Node]): Mapping of legal moves (column indices)
+            to corresponding child nodes.
+        N (int): Total number of visits to this node.
+        W (float): Accumulated win score from the perspective of the parent’s player.
     """
     __slots__ = ("parent", "move", "to_play", "children", "N", "W")
 
@@ -107,7 +116,7 @@ class MCTSAgent:
                 (useful for Connect-N games).
             seed (int | None): Random seed for reproducible behavior.
         """
-        self.name = name or "MCTS(UCT)"
+        self.name = name or "Monty Carlton"
         self.SIM = simulations_per_move
         self.TL  = time_limit_s
         self.C   = exploration_c
@@ -197,7 +206,7 @@ class MCTSAgent:
         path = [node]
 
         while node.children:
-            node = max(node.children.values(), key=lambda n: n.uct_value(self.C))
+            node = max(node.children.values(), key = lambda n: n.uct_value(self.C))
             state = _clone_and_drop(state, node.move, node.parent.to_play)
             path.append(node)
             if node.N == 0 or self._is_terminal(state):

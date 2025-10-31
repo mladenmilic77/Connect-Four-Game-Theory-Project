@@ -2,7 +2,7 @@ from __future__ import annotations
 from board import Board
 from agents.heuristic_agent import _clone_and_drop, _opp, OffensiveAgent
 
-INF = 10**12
+INF = 10 ** 12
 
 
 def _ordered_moves(board: Board, legal_cols: list[int]) -> list[int]:

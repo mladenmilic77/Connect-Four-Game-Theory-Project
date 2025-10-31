@@ -159,7 +159,7 @@ def _count_potentials(b: Board, pid: int) -> int:
     rows, cols, grid = b.rows, b.cols, b.grid
     me, opp = pid, _opp(pid)
     total_score = 0
-
+    # up-down windows
     for c in range(cols):
         for r in range(rows - (k - 1)):
             window = [grid[r + i][c] for i in range(k)]
@@ -167,7 +167,7 @@ def _count_potentials(b: Board, pid: int) -> int:
                 continue
             my_tokens = window.count(me)
             total_score += my_tokens ** 2
-
+    #left-right windows
     for r in range(rows):
         for c in range(cols - (k - 1)):
             window = [grid[r][c + i] for i in range(k)]
@@ -175,7 +175,7 @@ def _count_potentials(b: Board, pid: int) -> int:
                 continue
             my_tokens = window.count(me)
             total_score += my_tokens ** 2
-
+    #top-left windows
     for r in range(rows - (k - 1)):
         for c in range(cols - (k - 1)):
             window = [grid[r + i][c + i] for i in range(k)]
@@ -183,7 +183,7 @@ def _count_potentials(b: Board, pid: int) -> int:
                 continue
             my_tokens = window.count(me)
             total_score += my_tokens ** 2
-
+    #bottom-right windows
     for r in range(k - 1, rows):
         for c in range(cols - (k - 1)):
             window = [grid[r - i][c + i] for i in range(k)]
