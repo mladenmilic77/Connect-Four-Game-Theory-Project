@@ -12,7 +12,7 @@ class GameController:
         turn (int): Current player (1 or 2).
         winner_cache (int): 0 = no winner, 1 = player 1, 2 = player 2.
         """
-    def __init__(self, board = None):
+    def __init__(self, board: Board | None = None):
         """
         Initialize the controller with a board.
         Args:

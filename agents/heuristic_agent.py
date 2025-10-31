@@ -57,7 +57,7 @@ def _creates_double_threat(b: Board, col: int, pid: int) -> bool:
     """
     nb = _clone_and_drop(b, col, pid)
     wins_next = _immediate_wins(nb, pid)
-    return len(set(wins_next)) >= 2
+    return len(wins_next) >= 2
 
 def _opponent_has_double_threat(b: Board, pid: int) -> list[int]:
     """
@@ -77,56 +77,7 @@ def _opponent_has_double_threat(b: Board, pid: int) -> list[int]:
             cols.append(c)
     return cols
 
-def _count_potentials(b: Board, pid: int) -> int:
-    """
-    Sum of squared token counts per window (all k-length segments without opponent tokens).
-    Rough heuristic for potential connected lines.
-    Args:
-        b (Board): The board.
-        pid (int): The player ID.
-    Returns:
-        int: Total score on the board `b` for player `pid`.
-    """
-    k = b.connect
-    rows, cols, grid = b.rows, b.cols, b.grid
-    me, opp = pid, _opp(pid)
-    total_score = 0
-
-    for c in range(cols):
-        for r in range(rows - (k - 1)):
-            window = [grid[r + i][c] for i in range(k)]
-            if opp in window:
-                continue
-            my_tokens = window.count(me)
-            total_score += my_tokens ** 2
-
-    for r in range(rows):
-        for c in range(cols - (k - 1)):
-            window = [grid[r][c + i] for i in range(k)]
-            if opp in window:
-                continue
-            my_tokens = window.count(me)
-            total_score += my_tokens ** 2
-
-    for r in range(rows - (k - 1)):
-        for c in range(cols - (k - 1)):
-            window = [grid[r + i][c + i] for i in range(k)]
-            if opp in window:
-                continue
-            my_tokens = window.count(me)
-            total_score += my_tokens ** 2
-
-    for r in range(k - 1, rows):
-        for c in range(cols - (k - 1)):
-            window = [grid[r - i][c + i] for i in range(k)]
-            if opp in window:
-                continue
-            my_tokens = window.count(me)
-            total_score += my_tokens ** 2
-
-    return total_score
-
-def _detect_fork_patterns(b: Board, pid: int) -> int:
+'''def _detect_fork_patterns(b: Board, pid: int) -> int:
     """
     Detects latent fork patterns (_XX_ / _OO_) horizontally and diagonally.
     Evaluates positions that could become forks (double threats) in future moves.
@@ -177,7 +128,7 @@ def _detect_fork_patterns(b: Board, pid: int) -> int:
                 if is_playable(r, c) and is_playable(r - (k - 1) , c + (k - 1)):
                     score -= penal_opp_fork
 
-    return score
+    return score'''
 
 def _center_bonus(b: Board, col: int) -> int:
     """
@@ -193,6 +144,55 @@ def _center_bonus(b: Board, col: int) -> int:
     mid = (b.cols - 1) / 2.0
     dist = abs(col - mid)
     return -int(dist)
+
+def _count_potentials(b: Board, pid: int) -> int:
+    """
+    Sum of squared token counts per window (all k-length segments without opponent tokens).
+    Rough heuristic for potential connected lines.
+    Args:
+        b (Board): The board.
+        pid (int): The player ID.
+    Returns:
+        int: Total score on the board `b` for player `pid`.
+    """
+    k = b.connect
+    rows, cols, grid = b.rows, b.cols, b.grid
+    me, opp = pid, _opp(pid)
+    total_score = 0
+
+    for c in range(cols):
+        for r in range(rows - (k - 1)):
+            window = [grid[r + i][c] for i in range(k)]
+            if opp in window:
+                continue
+            my_tokens = window.count(me)
+            total_score += my_tokens ** 2
+
+    for r in range(rows):
+        for c in range(cols - (k - 1)):
+            window = [grid[r][c + i] for i in range(k)]
+            if opp in window:
+                continue
+            my_tokens = window.count(me)
+            total_score += my_tokens ** 2
+
+    for r in range(rows - (k - 1)):
+        for c in range(cols - (k - 1)):
+            window = [grid[r + i][c + i] for i in range(k)]
+            if opp in window:
+                continue
+            my_tokens = window.count(me)
+            total_score += my_tokens ** 2
+
+    for r in range(k - 1, rows):
+        for c in range(cols - (k - 1)):
+            window = [grid[r - i][c + i] for i in range(k)]
+            if opp in window:
+                continue
+            my_tokens = window.count(me)
+            total_score += my_tokens ** 2
+
+    return total_score
 
 class _HeuristicBase:
     """
@@ -223,7 +223,7 @@ class _HeuristicBase:
         self.w_my_fork = w_my_fork
         self.w_opp_fork = w_opp_fork
 
-    def score_position(self, board: Board, last_col, player) -> int:
+    def score_position(self, board: Board, last_col: int, player: int) -> int:
         """
         Evaluate the board position numerically for the given player.
 
@@ -244,7 +244,7 @@ class _HeuristicBase:
 
         score += self.w_pot * _count_potentials(board, player)
         score += self.w_center * _center_bonus(board, last_col)
-        score += _detect_fork_patterns(board, player)
+        #score += _detect_fork_patterns(board, player)
 
         if board.winner() == player:
             score += self.w_win

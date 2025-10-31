@@ -216,7 +216,7 @@ class MCTSAgent:
         for col, ok in enumerate(state.valid_moves()):
             if not ok:
                 continue
-            node.children[col] = _Node(parent=node, move=col, to_play=_opp(node.to_play))
+            node.children[col] = _Node(parent = node, move = col, to_play = _opp(node.to_play))
 
     def _rollout(self, state: Board, to_play: int) -> int:
         """

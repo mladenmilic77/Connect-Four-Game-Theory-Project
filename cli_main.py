@@ -1,7 +1,7 @@
 from board import Board
+from match_runner import MatchRunner
 from agents.human_agent import HumanAgent
 from agents.random_agent import RandomAgent
-from match_runner import MatchRunner
 from agents.heuristic_agent import OffensiveAgent, DefensiveAgent
 from agents.minimax_agent import MinimaxAgent
 from agents.mcts_agent import MCTSAgent
@@ -33,10 +33,10 @@ def choose_agent(player_num: int) -> object:
     default_name = {
         "Human": "Paul Human",
         "Random": "Marlon Random",
-        "Offensive": "Rowan Attackinson",
-        "Defensive": "Samuel L. Blockson",
+        "Offensive": "Rowan Attackinson", # noqa
+        "Defensive": "Samuel L. Blockson", # noqa
         "Minimax": "Minnie Maxus", # noqa
-        "MCTS": "MCTS",
+        "MCTS": "Monty Carlton"
     }[agent_type]
     name = input(f"Enter name for {agent_type} Player {player_num} | default: {default_name}: ").strip() or default_name
 

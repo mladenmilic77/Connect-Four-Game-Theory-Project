@@ -30,4 +30,3 @@ class RandomAgent:
         if not legal_moves:
             raise RuntimeError("No legal moves available.")
         return self.rng.choice(legal_moves)
-

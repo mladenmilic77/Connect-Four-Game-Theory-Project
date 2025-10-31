@@ -11,12 +11,12 @@ class MatchRunner:
         echo (bool): If True, prints moves and status messages.
         history (list[tuple[int, int]]): Sequence of (player_id, column) moves.
     """
-    def __init__(self, agent1, agent2, board: Board | None = None, echo: bool = True):
+    def __init__(self, agent1: object, agent2: object, board: Board | None = None, echo: bool = True):
         """
         Initialize a match runner with two agents and a game controller.
         Args:
-            agent1: Agent instance for Player 1.
-            agent2: Agent instance for Player 2.
+            agent1 (object): Agent instance for Player 1.
+            agent2 (object): Agent instance for Player 2.
             board (Board | None): Optional starting board (default: new empty board).
             echo (bool): Whether to print moves/status during the game.
         """
@@ -47,17 +47,14 @@ class MatchRunner:
                 self.history.append((player_id, col))
 
                 if self.echo:
-                    self.print_board()
-                    name = getattr(agent, "name", f"Agent{player_id}")
+                    self._print_board()
+                    name = getattr(agent, "name", f"Agent {player_id}")
                     if status.startswith("Winner"):
-                        winner_id = self.game_controller.winner_cache
-                        winner_agent = self.agent1 if winner_id == 1 else self.agent2
-                        winner_name = getattr(winner_agent, "name", f"Agent{winner_id}")
-                        status_text = f"Winner: {winner_name} (P{winner_id})"
+                        status_text = f"Winner: {name} (P{player_id})"
                     elif status == "Draw":
                         status_text = "Draw"
                     else:
-                        next_id = self.game_controller.current_player()
+                        next_id = 1 if player_id == 2 else 2
                         next_agent = self.agent1 if next_id == 1 else self.agent2
                         next_name = getattr(next_agent, "name", f"Agent{next_id}")
                         status_text = f"Next: {next_name} (P{next_id})"
@@ -73,7 +70,7 @@ class MatchRunner:
                 if self.echo:
                     print("Error:", e)
 
-    def print_board(self):
+    def _print_board(self) -> None:
         """Print the current board state in a readable CLI format."""
         grid = self.game_controller.board.grid
         rows, cols = self.game_controller.board.rows, self.game_controller.board.cols
@@ -83,7 +80,7 @@ class MatchRunner:
             '5': '5️⃣', '6': '6️⃣', '7': '7️⃣', '8': '8️⃣', '9': '9️⃣'
         }
 
-        def num_to_two_rows(n: int):
+        def num_to_two_rows(n: int) -> tuple[str, str]:
             t = n // 10
             o = n % 10
             tens = digit_emoji[str(t)]

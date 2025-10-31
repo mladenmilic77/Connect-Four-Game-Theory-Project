@@ -6,7 +6,6 @@ MAX_RC = 30
 ROWS = 6
 COLS = 7
 
-
 class Board:
     """
     Connect-N board and rules.
